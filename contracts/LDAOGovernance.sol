@@ -33,6 +33,7 @@ contract LDAOGovernance is IGovernance, AccessControl {
 
     function setRewardTokenAddress(address tokenAddress)
         external
+        override
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
         require(
@@ -44,6 +45,7 @@ contract LDAOGovernance is IGovernance, AccessControl {
 
     function setInvestorContractAddress(address contractAddress)
         external
+        override
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
         require(
@@ -53,7 +55,7 @@ contract LDAOGovernance is IGovernance, AccessControl {
         investorContractAddress = contractAddress;
     }
 
-    function registerVoter(address voterAddress) external {
+    function registerVoter(address voterAddress) external override{
         require(
             msg.sender == investorContractAddress,
             "Failed to authenticate sender!"
@@ -63,6 +65,7 @@ contract LDAOGovernance is IGovernance, AccessControl {
 
     function createProposal(uint256 startTime, string memory ipfsFolderHash)
         external
+        override
         onlyRole(VOTER_ROLE)
         returns (uint256)
     {
@@ -79,6 +82,7 @@ contract LDAOGovernance is IGovernance, AccessControl {
 
     function vote(uint256 proposal, uint256 response)
         external
+        override
         onlyRole(VOTER_ROLE)
     {
         require(
