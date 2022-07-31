@@ -7,14 +7,17 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract LDAOGovernance is IGovernance, AccessControl {
     using Counters for Counters.Counter;
-    
+
+    // events
+    event CreateProposal(address createdBy, uint256 proposal);
+
     // auth roles
     bytes32 public constant VOTER_ROLE = keccak256("VOTER_ROLE");
 
     // investor contract
     address private investorContractAddress;
 
-    //reward data
+    // reward data
     address private rewardTokenAddress;
 
     // proposal data
@@ -24,10 +27,11 @@ contract LDAOGovernance is IGovernance, AccessControl {
     mapping(uint256 => mapping(address => uint256)) private proposalUserVotes;
     mapping(uint256 => string) private proposalIPFSHashes;
     mapping(uint256 => uint256) private proposalStartDates;
+    mapping(uint256 => mapping(address => bool)) proposalUserVoted;
 
     constructor(uint256 votePeriod) {
-        grantRole(VOTER_ROLE, msg.sender);
-        grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(VOTER_ROLE, msg.sender);
         proposalVotePeriod = votePeriod;
     }
 
@@ -55,7 +59,7 @@ contract LDAOGovernance is IGovernance, AccessControl {
         investorContractAddress = contractAddress;
     }
 
-    function registerVoter(address voterAddress) external override{
+    function registerVoter(address voterAddress) external override {
         require(
             msg.sender == investorContractAddress,
             "Failed to authenticate sender!"
@@ -63,11 +67,34 @@ contract LDAOGovernance is IGovernance, AccessControl {
         grantRole(VOTER_ROLE, voterAddress);
     }
 
+    function canVote(address voter) external view override returns (bool) {
+        return hasRole(VOTER_ROLE, voter);
+    }
+
+    function hasVoted(uint256 proposal, address voter)
+        external
+        view
+        returns (bool)
+    {
+        return proposalUserVoted[proposal][voter];
+    }
+
+    function getVote(uint256 proposal, address voter)
+        external
+        view
+        returns (uint)
+    {
+        require(
+            proposalUserVoted[proposal][voter] == true,
+            "Voter has not yet voted"
+        );
+        return proposalUserVotes[proposal][voter];
+    }
+
     function createProposal(uint256 startTime, string memory ipfsFolderHash)
         external
         override
         onlyRole(VOTER_ROLE)
-        returns (uint256)
     {
         require(
             startTime > block.timestamp,
@@ -77,7 +104,7 @@ contract LDAOGovernance is IGovernance, AccessControl {
         uint256 index = proposalCounter.current();
         proposalStartDates[index] = block.timestamp;
         proposalIPFSHashes[index] = ipfsFolderHash;
-        return index;
+        emit CreateProposal(msg.sender, index);
     }
 
     function vote(uint256 proposal, uint256 response)
@@ -97,7 +124,54 @@ contract LDAOGovernance is IGovernance, AccessControl {
             proposalStartDates[proposal] + proposalVotePeriod > block.timestamp,
             "Proposal Voting period has not yet started."
         );
+        require(
+            proposalUserVoted[proposal][msg.sender] == false,
+            "You hav already voted"
+        );
         proposalUserVotes[proposal][msg.sender] = response;
         proposalVotes[proposal].push(response);
+        proposalUserVoted[proposal][msg.sender] = true;
+    }
+
+    function getProposalOutcome(uint256 proposal)
+        external
+        view
+        override
+        returns (
+            uint256,
+            uint256,
+            uint256
+        )
+    {
+        uint256 yes = 0;
+        uint256 total = 0;
+        uint256 impartial = 0;
+        for (uint256 i = 0; i < proposalVotes[proposal].length; i++) {
+            if (i == 1) {
+                yes++;
+                total++;
+            } else if (i == 0) {
+                total++;
+            } else if (i == 2) {
+                impartial++;
+            }
+        }
+        return (yes, total, impartial);
+    }
+
+    function getProposalVotes(uint256 proposal)
+        external
+        view
+        returns (uint256[] memory)
+    {
+        return proposalVotes[proposal];
+    }
+
+    function getProposalFolder(uint256 proposal)
+        external
+        view
+        returns (string memory)
+    {
+        return proposalIPFSHashes[proposal];
     }
 }
