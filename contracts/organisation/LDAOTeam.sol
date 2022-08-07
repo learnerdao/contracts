@@ -3,6 +3,7 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interface/ITeam.sol";
+import "../core/interface/ITreasury.sol";
 
 contract LDAOTeam is AccessControl, ITeam {
     bytes32 public constant EMPLOYER_ROLE = keccak256("EMPLOYER_ROLE");
@@ -14,6 +15,7 @@ contract LDAOTeam is AccessControl, ITeam {
     mapping(uint256 => bool) private _memberActive;
     address[] private _members;
     uint256[] private _fundingPots;
+    uint256 _primaryFundingPot;
 
     constructor(string memory name, address deployer) {
         _name = name;
@@ -31,11 +33,19 @@ contract LDAOTeam is AccessControl, ITeam {
         _memberActive[_memberArrayIndex[user]] = false;
     }
 
+    function setPrimaryFundingPot(uint256 pot) public onlyRole(DEPLOYER_ROLE) {
+        _primaryFundingPot = pot;
+    }
+
     function assignFundingPot(uint256 pot) public onlyRole(DEPLOYER_ROLE) {
         _fundingPots.push(pot);
     }
-    
+
     function isMember(address user) external view override returns (bool) {
         return _memberActive[_memberArrayIndex[user]];
+    }
+
+    function getPrimaryPot() external view override returns (uint256) {
+        return _primaryFundingPot;
     }
 }

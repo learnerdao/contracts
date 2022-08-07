@@ -10,4 +10,6 @@ interface ITreasury {
     function getAllocationForPot(uint256 pot) external view returns(uint256);
     function getTotalAllocation() external view returns (uint256);
     function getUnallocatedFunds() external view returns (uint256);
+    function escrowFunds(uint256 from, uint256 to, uint256 amount) external returns (uint256);
+    function releaseFunds(uint256 escrowId) external;
 }

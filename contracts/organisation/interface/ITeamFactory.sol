@@ -7,4 +7,6 @@ interface ITeamFactory {
     function deployTeam(string memory name) external;
     
     function enumerateTeams() external view returns(address[] memory);
+    function teamFromId(uint256 id) external view returns(address);
+    function getTeamPrimaryPotBalance(address team) external view returns (uint256);
 }

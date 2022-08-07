@@ -9,4 +9,5 @@ interface ITeam {
     function assignFundingPot(uint256 pot) external;
 
     function isMember(address user) external view returns (bool);
+    function getPrimaryPot() external view returns (uint256);
 }

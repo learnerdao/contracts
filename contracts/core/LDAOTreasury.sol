@@ -13,12 +13,24 @@ contract LDAOTreasury is AccessControl, ITreasury {
         keccak256("FUNDS_HANDLER_ROLE");
 
     Counters.Counter private _potIdCounter;
+    Counters.Counter private _escrowCounter;
+
+    struct EscrowEntry {
+        uint256 from;
+        uint256 to;
+        uint256 amount;
+        bool released;
+    }
+
     address[] private _allFundingPots;
     mapping(uint256 => address payable) private _potAddresses;
     mapping(uint256 => uint256) private _potAddressIndexes;
+    uint256 private _escrowPot;
+    mapping(uint256 => EscrowEntry) private _escrows;
 
     constructor(address teamFactory) {
         _grantRole(FUNDS_HANDLER_ROLE, teamFactory);
+        _escrowPot = deployFundingPot();
     }
 
     function deployFundingPot()
@@ -33,6 +45,28 @@ contract LDAOTreasury is AccessControl, ITreasury {
         _allFundingPots.push(address(pot));
         _potAddressIndexes[index] = _allFundingPots.length - 1;
         return index;
+    }
+
+    function escrowFunds(
+        uint256 from,
+        uint256 to,
+        uint256 amount
+    ) external override onlyRole(FUNDS_HANDLER_ROLE) returns (uint256) {
+        moveFunds(from, _escrowPot, amount);
+        uint256 index = _escrowCounter.current();
+        _escrowCounter.increment();
+        EscrowEntry storage escrow = _escrows[index];
+        escrow.released = false;
+        escrow.from = from;
+        escrow.to = to;
+        escrow.amount = amount;
+        return index;
+    }
+
+    function releaseFunds(uint256 escrowId) external override {
+        EscrowEntry storage escrow = _escrows[escrowId];
+        escrow.released = true;
+        moveFunds(_escrowPot, escrow.to, escrow.amount);
     }
 
     function addFundsHandler(address handler)
