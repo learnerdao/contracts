@@ -26,6 +26,7 @@ abstract contract AbstractGovernanceModule is IGovernanceModule {
         ProposalData storage data = _proposalDatas[id];
         data.creator = msg.sender;
         data.title = title;
+        data.module = address(this);
         return id;
     }
 

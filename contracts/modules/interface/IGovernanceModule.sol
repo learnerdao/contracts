@@ -5,6 +5,7 @@ interface IGovernanceModule {
     struct ProposalData {
         string title;
         address creator;
+        address module;
     }
 
     function getData(uint256 proposalId) external view returns(ProposalData memory);
