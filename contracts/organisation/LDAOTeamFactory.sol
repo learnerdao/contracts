@@ -32,7 +32,7 @@ contract LDAOTeamFactory is AccessControl, ITeamFactory {
         tres.addFundsHandler(address(team));
         team.assignFundingPot(pot);
     }
-
+ 
     function enumerateTeams() public view override returns (address[] memory) {
         return _teams;
     }

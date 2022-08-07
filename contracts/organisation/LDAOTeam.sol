@@ -34,8 +34,8 @@ contract LDAOTeam is AccessControl, ITeam {
     function assignFundingPot(uint256 pot) public onlyRole(DEPLOYER_ROLE) {
         _fundingPots.push(pot);
     }
-
-    // manages team members
-    // manages funding (via role)
-    // managed by governance module
+    
+    function isMember(address user) external view override returns (bool) {
+        return _memberActive[_memberArrayIndex[user]];
+    }
 }
