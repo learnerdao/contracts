@@ -122,4 +122,19 @@ contract LDAOTreasury is AccessControl, ITreasury {
     function getUnallocatedFunds() public view returns (uint256) {
         return address(this).balance;
     }
+
+    function escrowFundsFromTreasury(uint256 to, uint256 amount)
+        external
+        override
+        returns (uint256)
+    {
+        allocateFunds(_escrowPot, amount);
+        uint256 index = _escrowCounter.current();
+        _escrowCounter.increment();
+        EscrowEntry storage escrow = _escrows[index];
+        escrow.released = false;
+        escrow.to = to;
+        escrow.amount = amount;
+        return index;
+    }
 }
