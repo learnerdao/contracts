@@ -37,6 +37,7 @@ contract LDAOTreasuryTransferBetweenTeams is AbstractGovernanceModule {
         uint256 fromPot = ITeam(from).getPrimaryPot();
         uint256 toPot = ITeam(to).getPrimaryPot();
         transfer.escrowId = ITreasury(_treasury).escrowFunds(fromPot, toPot, amount);
+        return proposalId;
     }
 
     function execute(uint256 proposalId) external override {

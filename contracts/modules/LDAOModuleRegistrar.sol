@@ -17,13 +17,14 @@ contract LDAOModuleRegistrarV1 is AbstractGovernanceModule {
 
     constructor() {}
 
-    function proposeModule(address module, string memory title) external {
+    function proposeModule(address module, string memory title) external returns(uint256) {
         uint256 proposalId = _saveProposal(title);
         _proposalModules[proposalId] = module;
+        return proposalId;
     }
 
     function proposeRegistrarUpgrade(address replacement, string memory title)
-        external
+        external returns(uint256)
     {
         uint256 proposalId = _saveProposal(title);
         ProposedModuleUpgrade storage replacementData = _proposalModuleUpgrades[
@@ -32,6 +33,7 @@ contract LDAOModuleRegistrarV1 is AbstractGovernanceModule {
         replacementData.old = address(this);
         replacementData.replacement = replacement;
         _proposalIsUpgrade[proposalId] = true;
+        return proposalId;
     }
 
     function execute(uint256 proposalId) external override {

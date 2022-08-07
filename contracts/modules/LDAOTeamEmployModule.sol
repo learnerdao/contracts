@@ -18,7 +18,7 @@ contract LDAOTeamEmployModule is AbstractGovernanceModule {
         _teamFactory = teamFactory;
     }
 
-    function proposeTeamEmployment(address employee, uint256 teamId, string memory title) public {
+    function proposeTeamEmployment(address employee, uint256 teamId, string memory title) public returns (uint256){
           ITeamFactory fac = ITeamFactory(_teamFactory);
           address[] memory teams = fac.enumerateTeams();
           require(teams.length < teamId, "Provided Team ID doesnt exist.");
@@ -29,6 +29,7 @@ contract LDAOTeamEmployModule is AbstractGovernanceModule {
           ProposedEmployee storage proposedEmployee = _proposedEmployees[proposalId];
           proposedEmployee.employee = employee;
           proposedEmployee.teamAddress = teamAddr;
+          return proposalId;
     }
 
     function execute(uint256 proposalId) external override {

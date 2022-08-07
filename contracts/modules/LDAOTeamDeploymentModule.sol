@@ -20,10 +20,11 @@ contract LDAOTeamDeploymentModule is AbstractGovernanceModule {
     function proposeTeamDeployment(
         string memory teamName,
         string memory proposalTitle
-    ) public {
+    ) public returns (uint256){
         uint256 proposalId = _saveProposal(proposalTitle);
         ProposedTeam storage team = _proposedTeams[proposalId];
         team.name = teamName;
+        return proposalId;
     }
 
     function getExtraData(uint256 proposalId)
