@@ -1,6 +1,0 @@
-- modules
-transferFunds (treasury)
-allocate funds (treasury)
-withdraw funds (treasury) (expenses)
-
-
